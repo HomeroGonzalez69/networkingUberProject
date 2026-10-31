@@ -6,7 +6,11 @@
       "headshot": "",
       "currentZone": "",
       "riding": false,
-      "verified": false
+      "verified": false,
+      "serverAddress": [
+        "127.0.0.1",
+        61664
+      ]
     },
     {
       "id": "B",
@@ -14,7 +18,8 @@
       "headshot": "",
       "currentZone": "",
       "riding": false,
-      "verified": false
+      "verified": false,
+      "serverAddress": ""
     },
     {
       "id": "C",
@@ -22,7 +27,11 @@
       "headshot": "",
       "currentZone": "",
       "riding": false,
-      "verified": false
+      "verified": false,
+      "serverAddress": [
+        "127.0.0.1",
+        52025
+      ]
     }
   ],
   "Driver": [
@@ -35,7 +44,8 @@
       "model": "Ford",
       "color": "Black",
       "plateNumber": 111,
-      "verified": false
+      "verified": false,
+      "serverAddress": ""
     },
     {
       "id": "E",
@@ -46,7 +56,11 @@
       "model": "Mazda",
       "color": "Red",
       "plateNumber": 222,
-      "verified": false
+      "verified": false,
+      "serverAddress": [
+        "127.0.0.1",
+        52776
+      ]
     },
     {
       "id": "F",
@@ -57,16 +71,14 @@
       "model": "Tesla",
       "color": "White",
       "plateNumber": 333,
-      "verified": false
+      "verified": false,
+      "serverAddress": ""
     }
   ],
   "server": [
-    {
-
-    }
-  ],"rideInfo": [
-    {
-
-    }
+    {}
+  ],
+  "rideInfo": [
+    {}
   ]
 }

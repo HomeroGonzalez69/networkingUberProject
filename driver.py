@@ -1,24 +1,42 @@
 from socket import *
+import json
+
 serverName = 'localhost'
 serverPort = 12000
 clientSocket = socket(AF_INET, SOCK_DGRAM)
+serverAddress = (serverName, serverPort)
 
-login = 0
+login = False
 
-while login == 0:
-    message = input('Input username:')
-    message += input('Input password:')
-    clientSocket.sendto(message.encode(),(serverName, serverPort))
-    response, serverAddress = clientSocket.recvfrom(2048)
-    response = response.decode()
+while not login:
+    user_id = input('Input username: ')
+    password = input('Input password: ')
+
+    payload = json.dumps({
+        "id": user_id,
+        "password": password
+    })
+
+    clientSocket.sendto(payload.encode("utf-8"),serverAddress)
+
+
+    response, _  = clientSocket.recvfrom(2048)
+    response = response.decode("utf-8")
+
+
     if response == "passVerified":
-        login = 1
+        login = True
     else:
         print("Login Failed")
 
 print ("Login Successful")
 
-response, serverAddress = clientSocket.recvfrom(2048)
-response = response.decode()
 
-print(response)
+while True:
+    text = input('Enter message: ')
+    payload = json.dumps({
+        "text": text
+    })
+    clientSocket.sendto(payload.encode("utf-8"), serverAddress)
+    response, _ = clientSocket.recvfrom(2048)
+    print(response.decode("utf-8"))
