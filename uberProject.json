@@ -5,59 +5,68 @@
       "password": "passwordA",
       "headshot": "",
       "currentZone": "",
-      "riding": false
+      "riding": false,
+      "verified": false
     },
     {
       "id": "B",
       "password": "passwordB",
       "headshot": "",
       "currentZone": "",
-      "riding": false
+      "riding": false,
+      "verified": false
     },
     {
       "id": "C",
       "password": "passwordC",
       "headshot": "",
       "currentZone": "",
-      "riding": false
+      "riding": false,
+      "verified": false
     }
   ],
   "Driver": [
     {
       "id": "D",
       "password": "passwordD",
-      "headshot": "https://media.licdn.com/dms/image/v2/D4E03AQFsnIfC6WMfiw/profile-displayphoto-scale_200_200/B4EZzEdlCNJkAc-/0/1772822616909?e=2147483647&v=beta&t=0VkFTQagEfwI_tbDJXq3iegX50IQlMzGaGdaPDPodkM",
+      "headshot": "",
       "currentZone": "",
       "available": false,
       "model": "Ford",
       "color": "Black",
-      "plateNumber": 111
+      "plateNumber": 111,
+      "verified": false
     },
     {
       "id": "E",
       "password": "passwordE",
-      "headshot": "https://theintercept.com/wp-content/uploads/2018/03/Lee-Fang-headshot-bw-crop-1521415569-200x200.jpg",
+      "headshot": "",
       "currentZone": "",
       "available": false,
       "model": "Mazda",
       "color": "Red",
-      "plateNumber": 222
+      "plateNumber": 222,
+      "verified": false
     },
     {
       "id": "F",
       "password": "passwordF",
-      "headshot": "https://media.licdn.com/dms/image/v2/D5603AQFbzguk2claMg/profile-displayphoto-scale_200_200/B56Z2sWXefIYAY-/0/1776713077911?e=2147483647&v=beta&t=QT0Lsw68Rxcu-CBIMBKqMPe2x2gdaqvxTqZKAzmHrIM",
+      "headshot": "",
       "currentZone": "",
       "available": false,
       "model": "Tesla",
       "color": "White",
-      "plateNumber": 333
+      "plateNumber": 333,
+      "verified": false
     }
   ],
   "server": [
     {
 
     }
-  ],
-  "$schema": "./node_modules/json-server/schema.json"
+  ],"rideInfo": [
+    {
+
+    }
+  ]
 }
