@@ -31,12 +31,23 @@ while not login:
 
 print ("Login Successful")
 
+text = "ack"
+payload = json.dumps({
+    "text": text
+})
+clientSocket.sendto(payload.encode("utf-8"), serverAddress)
 
 while True:
-    text = input('Enter message: ')
+    response, _ = clientSocket.recvfrom(2048)
+    
+    response = response.decode("utf-8")
+    if response == "kill":
+        break
+
+    print(response)
+    text = input('YES if you want to proceed: ')
     payload = json.dumps({
         "text": text
     })
     clientSocket.sendto(payload.encode("utf-8"), serverAddress)
-    response, _ = clientSocket.recvfrom(2048)
-    print(response.decode("utf-8"))
+

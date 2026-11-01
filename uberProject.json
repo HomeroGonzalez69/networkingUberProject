@@ -3,13 +3,13 @@
     {
       "id": "A",
       "password": "passwordA",
-      "headshot": "",
+      "headshot": "mewoemwomew",
       "currentZone": "",
       "riding": false,
       "verified": false,
       "serverAddress": [
         "127.0.0.1",
-        61664
+        50789
       ]
     },
     {
@@ -79,6 +79,16 @@
     {}
   ],
   "rideInfo": [
-    {}
+    {
+      "id": "2345423",
+      "driverId": "D",
+      "customerId": "A",
+      "pickupZone": "2",
+      "dropoffZone": "5",
+      "requestTime": "12:00 PM",
+      "pickupTime": "12:05 PM",
+      "dropoffTime": "12:30 PM",
+      "cost": 5.0
+    }
   ]
 }
