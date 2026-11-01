@@ -1,5 +1,5 @@
 from http import client
-from random import random
+import random
 from socket import *
 import json
 from datetime import datetime
@@ -12,6 +12,7 @@ queueLock = threading.Lock()
 dataLock = threading.RLock()
 
 global data
+random.seed(42) # Set a fixed seed for reproducibility
 
 
 #sets up the UDP server socket and listens for incoming messages
@@ -254,14 +255,14 @@ def handleClient(clientAddress):
                     print("Waiting for a ride request...")
                     rideFound = False
                     while not rideFound:
-                        with dataLock:
                             for ride in data["rideInfo"]:
                                 if ride["pending"] == 1:
-                                    ride["pending"] = 2
-                                    ride["driverId"] = driverID
-                                    writeJSON()
-                                    rideFound = True
-                                    break
+                                    with dataLock:
+                                        ride["pending"] = 2
+                                        ride["driverId"] = driverID
+                                        writeJSON()
+                                        rideFound = True
+                                        break
 
                     print("Ride request found. Sending ride details to driver...")
                     request = recieveFor(driverAddress)
@@ -421,7 +422,6 @@ def handleClient(clientAddress):
                     sendTo(customerAddress, customerMessage)
                     driverFound = False
                     print("Waiting for a driver to accept the ride request...")
-                    random.seed()
                     randomNumber = random.randint(1000, 9999)
 
                     #Collects the customer's ID, pickup zone, dropoff zone, request time, and calculates the
@@ -432,16 +432,16 @@ def handleClient(clientAddress):
                     # it updates the JSON data
                     with dataLock:
                         ride = {
+                            "pending": 1,
+                            "id": randomNumber,
+                            "driverId": None,
                             "customerId": customerID,
                             "pickupZone": pickup_zone,
                             "dropoffZone": dropoff_zone,
                             "requestTime": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                            "pending": 1,
-                            "id": randomNumber,
-                            "cost": getDistance(pickup_zone, dropoff_zone) * 5,
-                            "driverId": None,
                             "pickupTime": None,
                             "dropoffTime": None,
+                            "cost": getDistance(pickup_zone, dropoff_zone) * 5
                         }
 
                         data["rideInfo"].append(ride)
