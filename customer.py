@@ -62,6 +62,13 @@ while True:
             "dropoffZone": dropoff_zone
         })
         clientSocket.sendto(payload.encode("utf-8"), serverAddress)
+        continue
+    if response == "Your ride request has been sent to available drivers.":
+        print(response)
+        continue
+    if response.__contains__("initiated"):
+        print(response)
+        continue
 
     #prints the received message and prompts the user for input
     print(response)
