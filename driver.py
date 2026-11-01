@@ -17,11 +17,13 @@ login = False
 while not login:
     user_id = input('Input username: ')
     password = input('Input password: ')
+    tag = "driver"
 
     #creates a JSON payload with the user's login information and sends it to the server
     payload = json.dumps({
         "id": user_id,
-        "password": password
+        "password": password,
+        "tag": tag
     })
 
     clientSocket.sendto(payload.encode("utf-8"),serverAddress)
@@ -54,6 +56,22 @@ while True:
     response = response.decode("utf-8")
     if response == "kill":
         break
+    if response == "What is your current zone? (1, 2, ..., 9)":
+        print(response)
+        current_zone = input('Input current zone (1, 2, ..., 9): ')
+        payload = json.dumps({
+            "currentZone": current_zone
+        })
+        clientSocket.sendto(payload.encode("utf-8"), serverAddress)
+        continue
+    if response == "Please upload your driver headshot.":
+        print(response)
+        headshot = input('Input headshot file path: ')
+        payload = json.dumps({
+            "headshot": headshot
+        })
+        clientSocket.sendto(payload.encode("utf-8"), serverAddress)
+        continue
 
     #prints the received message and prompts the user for input
     print(response)

@@ -55,13 +55,13 @@ def getDistance(zone1, zone2):
     return distance
 
 #checks if the provided user_id and password match any entry in the JSON data
-def passwordCheck(user_id, password):
+def passwordCheck(user_id, password, tag):
     user_id = str(user_id).strip()
 
     for group in ("Customer", "Driver"):
         for person in data.get(group, []):
             if str(person.get("id")) == user_id:
-                if person.get("password") == password:
+                if person.get("password") == password and str(person.get("tag")) == tag:
                     return group.lower()
                 return "invalid" # ID exist, but wrong password
     return "invalid"
@@ -124,10 +124,11 @@ def handleClient(clientAddress):
                 print(f"Received message from unknown address: {clientAddress}")
                 clientID = str(request["id"])
                 clientPass = str(request["password"])
+                tag = str(request["tag"])
 
                 #loops until a valid user ID and password combination is provided, sending an "Invalid User" message back to the client if the credentials are incorrect
                 while True:
-                    passReturn = passwordCheck(clientID, clientPass)
+                    passReturn = passwordCheck(clientID, clientPass, tag)
                     if passReturn != "invalid":
                         break
                     returnMessage = "Invalid User"
@@ -187,13 +188,13 @@ def handleClient(clientAddress):
                     print(f"Driver ID: {driverID} at address: {driverAddress}. Sent request for headshot upload.")
 
                     request = recieveFor(driverAddress)
-                    text = str(request["text"])
-                    print(f"Driver ID: {driverID} at address: {driverAddress} responded to headshot request with: {text}")
+                    filePath = str(request["headshot"])
+                    print(f"Driver ID: {driverID} at address: {driverAddress} responded to headshot request with: {filePath}")
 
                     with dataLock:
                         for driver in data["Driver"]:
                             if driverID == driver["id"]:
-                                driver["headshot"] = text
+                                driver["headshot"] = filePath
                                 writeJSON()
                                 break
                     
@@ -240,14 +241,14 @@ def handleClient(clientAddress):
 
                     #receives the driver's response and decodes it from JSON format
                     request = recieveFor(driverAddress)
-                    text = str(request["text"])
-                    print(f"Driver ID: {driverID} at address: {driverAddress} responded with current zone: {text}")
+                    currentZone = str(request["currentZone"])
+                    print(f"Driver ID: {driverID} at address: {driverAddress} responded with current zone: {currentZone}")
 
                     with dataLock:
                         for driver in data["Driver"]:
                             if driverID == driver["id"]:
-                                driver["currentZone"] = text
-                                driverCurrentZone = int(text)
+                                driver["currentZone"] = currentZone
+                                driverCurrentZone = int(currentZone)
                                 writeJSON()
                                 break
                     
@@ -353,12 +354,12 @@ def handleClient(clientAddress):
                     print(f"Customer ID: {customerID} at address: {customerAddress}. Sent request for headshot upload.")
 
                     request = recieveFor(customerAddress)
-                    text = str(request["text"])
-                    print(f"Customer ID: {customerID} at address: {customerAddress}. Headshot: {text}")
+                    filePathHead = str(request["headshot"])
+                    print(f"Customer ID: {customerID} at address: {customerAddress}. Headshot: {filePathHead}")
                     with dataLock:
                         for customer in data["Customer"]:
                             if tuple(customer.get("serverAddress", [])) == tuple(customerAddress):
-                                customer["headshot"] = text
+                                customer["headshot"] = filePathHead
                                 writeJSON()
                                 break
                     

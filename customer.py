@@ -16,11 +16,13 @@ login = False
 while not login:
     user_id = input('Input username: ')
     password = input('Input password: ')
+    tag = "customer"
 
     #creates a JSON payload with the user's login information and sends it to the server
     payload = json.dumps({
         "id": user_id,
-        "password": password
+        "password": password,
+        "tag": tag
     })
 
     clientSocket.sendto(payload.encode("utf-8"),serverAddress)
@@ -53,7 +55,7 @@ while True:
     response = response.decode("utf-8")
     if response == "kill":
         break
-    if response == "What is your desired pickup and dropoff zone? Pickup zone: 1, Dropoff zone: 2":
+    elif response == "What is your desired pickup and dropoff zone? Pickup zone: 1, Dropoff zone: 2":
         print(response)
         pickup_zone = input('Input pickup zone (1, 2, ..., 9): ')
         dropoff_zone = input('Input dropoff zone (1, 2, ..., 9): ')
@@ -63,10 +65,18 @@ while True:
         })
         clientSocket.sendto(payload.encode("utf-8"), serverAddress)
         continue
-    if response == "Your ride request has been sent to available drivers.":
+    elif response.__contains__("Please upload your headshot"):
+        print(response)
+        headshot = input('Input headshot file path: ')
+        payload = json.dumps({
+            "headshot": headshot
+        })
+        clientSocket.sendto(payload.encode("utf-8"), serverAddress)
+        continue
+    elif response == "Your ride request has been sent to available drivers.":
         print(response)
         continue
-    if response.__contains__("initiated"):
+    elif response.__contains__("initiated"):
         print(response)
         continue
 
