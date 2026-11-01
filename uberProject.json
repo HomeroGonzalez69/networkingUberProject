@@ -6,7 +6,6 @@
       "headshot": "mewoemwomew",
       "currentZone": "",
       "riding": false,
-      "verified": false,
       "serverAddress": [
         "127.0.0.1",
         50789
@@ -18,7 +17,6 @@
       "headshot": "",
       "currentZone": "",
       "riding": false,
-      "verified": false,
       "serverAddress": ""
     },
     {
@@ -27,7 +25,6 @@
       "headshot": "",
       "currentZone": "",
       "riding": false,
-      "verified": false,
       "serverAddress": [
         "127.0.0.1",
         52025
@@ -44,8 +41,10 @@
       "model": "Ford",
       "color": "Black",
       "plateNumber": 111,
-      "verified": false,
-      "serverAddress": ""
+      "serverAddress": [
+        "127.0.0.1",
+        55721
+      ]
     },
     {
       "id": "E",
@@ -56,7 +55,6 @@
       "model": "Mazda",
       "color": "Red",
       "plateNumber": 222,
-      "verified": false,
       "serverAddress": [
         "127.0.0.1",
         52776
@@ -71,7 +69,6 @@
       "model": "Tesla",
       "color": "White",
       "plateNumber": 333,
-      "verified": false,
       "serverAddress": ""
     }
   ],
@@ -80,7 +77,8 @@
   ],
   "rideInfo": [
     {
-      "id": "2345423",
+      "pending": 4,
+      "id": 345423,
       "driverId": "D",
       "customerId": "A",
       "pickupZone": "2",
@@ -89,6 +87,71 @@
       "pickupTime": "12:05 PM",
       "dropoffTime": "12:30 PM",
       "cost": 5.0
+    }
+  ],
+  "zones": [
+    {
+      "zoneId": "1",
+      "zoneLocation": [
+        0,
+        0
+      ]
+    },
+    {
+      "zoneId": "2",
+      "zoneLocation": [
+        1,
+        0
+      ]
+    },
+    {
+      "zoneId": "3",
+      "zoneLocation": [
+        2,
+        0
+      ]
+    },
+    {
+      "zoneId": "4",
+      "zoneLocation": [
+        0,
+        1
+      ]
+    },
+    {
+      "zoneId": "5",
+      "zoneLocation": [
+        1,
+        1
+      ]
+    },
+    {
+      "zoneId": "6",
+      "zoneLocation": [
+        2,
+        1
+      ]
+    },
+    {
+      "zoneId": "7",
+      "zoneLocation": [
+        0,
+        2
+      ]
+    },
+    {
+      "zoneId": "8",
+      "zoneLocation": [
+        1,
+        2
+      ]
+    },
+    {
+      "zoneId": "9",
+      "zoneLocation": [
+        2,
+        2
+      ]
     }
   ]
 }
