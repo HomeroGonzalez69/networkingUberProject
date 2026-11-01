@@ -3,14 +3,37 @@ from socket import *
 import json
 from datetime import datetime
 import threading
+import queue
 import time
 
+clientQueue = {}
+queueLock = threading.Lock()
+dataLock = threading.Lock()
 
 global data
 
 #opens and loads the JSON file safely while using a context manager
 with open("uberProject.json", "r+", encoding="utf-8") as file:
     data = json.load(file)
+
+def recieveFor(address):
+    #waits for the next packet routed to this client
+    packet = clientQueue[address].get()
+    return json.loads(packet.decode("utf-8"))
+
+def sendTo(address, message):
+    serverSocket.sendto(message.encode("utf-8"), address)
+
+def handleClient(clientAddress, firstPacket):
+    try:
+        request = json.loads(firstPacket.decode("utf-8"))
+    except (json.JSONDecodeError, UnicodeDecodeError, KeyError) as error:
+        print(f"Invalid Packet from {clientAddress}: {error}")
+    finally:
+        with queueLock:
+            clientQueue.pop(clientAddress, None)
+
+
 
 def getDistance(zone1, zone2):
     #calculates the distance between two zones based on their coordinates in the JSON data
@@ -105,6 +128,7 @@ while True:
 
     #if the server address is not recognized, it checks the provided user ID and password against the JSON data
     if serverChecked == "Unknown":
+        print(f"Received message from unknown address: {clientAddress}")
         clientID = str(request["id"])
         clientPass = str(request["password"])
 
@@ -114,16 +138,20 @@ while True:
             if passReturn != "invalid":
                 break
             returnMessage = "Invalid User"
+
+            print(f"Invalid login attempt from address: {clientAddress} with ID: {clientID}")
             serverSocket.sendto(returnMessage.encode(), clientAddress)
 
             message, clientAddress = serverSocket.recvfrom(2048)
             request = json.loads(message.decode("utf-8"))
             clientID = str(request["id"])
             clientPass = str(request["password"])
+            print(f"Received message from {clientAddress} with ID: {clientID}")
 
         #if the credentials are valid, it sends a "passVerified" message back to the client and updates the JSON data with the client's server address
         if passReturn == "customer":
             returnMessage = "passVerified"
+            print(f"Verified login for customer ID: {clientID} from address: {clientAddress}")
             serverSocket.sendto(returnMessage.encode(), clientAddress)
             for customer in data["Customer"]:
                 if customer["id"] == clientID:
@@ -133,6 +161,7 @@ while True:
 
         elif passReturn == "driver":
             returnMessage = "passVerified"
+            print(f"Verified login for driver ID: {clientID} from address: {clientAddress}")
             serverSocket.sendto(returnMessage.encode(), clientAddress)
             for driver in data["Driver"]:
                 if driver["id"] == clientID:
@@ -144,64 +173,166 @@ while True:
     #if the server address is recognized as a driver, it prompts the driver to upload a headshot and view their previous rides, updating the JSON data accordingly.
     #  If the server address is recognized as a customer, it prompts the customer to upload a headshot and view their previous rides, also updating the JSON data accordingly.
     elif serverChecked == "Driver":
+        print(f"Received message from Driver address: {clientAddress}")
+        driverID = idFinder(tuple(clientAddress))
         driverMessage = "Would you like to upload a driver headshot?: "
-        serverSocket.sendto(driverMessage.encode(), clientAddress)
+        driverAddress = tuple(clientAddress)
+        serverSocket.sendto(driverMessage.encode(), driverAddress)
+        print(f"Driver ID: {driverID} at address: {driverAddress}. Asking about headshot upload.")
 
         #receives the driver's response and decodes it from JSON format
-        message, clientAddress = serverSocket.recvfrom(2048)
+        message, driverAddress = serverSocket.recvfrom(2048)
         request = json.loads(message.decode("utf-8"))
         text = str(request["text"])
+        print(f"Driver ID: {driverID} at address: {driverAddress} responded with: {text}")
+
 
         #if the driver chooses to upload a headshot, it prompts for the headshot and updates the JSON data with the provided information
         if text.lower() == "yes":
             driverMessage = "Please upload your driver headshot."
-            serverSocket.sendto(driverMessage.encode(), clientAddress)
+            serverSocket.sendto(driverMessage.encode(), driverAddress)
+            print(f"Driver ID: {driverID} at address: {driverAddress}. Sent request for headshot upload.")
 
-            message, clientAddress = serverSocket.recvfrom(2048)
+            message, driverAddress = serverSocket.recvfrom(2048)
             request = json.loads(message.decode("utf-8"))
             text = str(request["text"])
+            print(f"Driver ID: {driverID} at address: {driverAddress} responded to headshot request with: {text}")
 
             for driver in data["Driver"]:
-                if tuple(driver.get("serverAddress", [])) == tuple(clientAddress):
+                if driverID == driver["id"]:
                     driver["headshot"] = list(text)
                     writeJSON()
                     break
             
         #prompts the driver to view their previous rides and updates the JSON data accordingly
         driverMessage = "Would you like to see a list your previous rides?"
-        serverSocket.sendto(driverMessage.encode(), clientAddress)
+        serverSocket.sendto(driverMessage.encode(), driverAddress)
+        print(f"Driver ID: {driverID} at address: {driverAddress}. Asking about previous rides.")
 
-        message, clientAddress = serverSocket.recvfrom(2048)
+        message, driverAddress = serverSocket.recvfrom(2048)
         request = json.loads(message.decode("utf-8"))
         text = str(request["text"])
+        print(f"Driver ID: {driverID} at address: {driverAddress} responded with: {text}")
         rides = ""
+        print(f"Driver ID: {driverID} at address: {driverAddress}. Responded with: {text}")
+
 
         #if the driver chooses to view their previous rides, it retrieves the relevant information from the JSON data and sends it back to the driver. 
         # If the driver chooses not to view their previous rides, it prompts them to accept a ride.
         if text.lower() == "yes":
-            id = idFinder(tuple(clientAddress))
             for driver in data["rideInfo"]:
-                if str(driver["driverId"]) == id:
-                    rides += f"Ride ID: {driver['id']}, Customer ID: {driver['customerId']}, Driver ID: {driver['driverId']}, Pickup: {driver['pickupZone']}, Dropoff: {driver['dropoffZone']}, Cost: {driver['cost']}, Request Time: {driver['requestTime']}, Pickup Time: {driver['pickupTime']}, Dropoff Time: {driver['dropoffTime']}\n"
+                if str(driver["driverId"]) == driverID:
+                    rides += f"\nRide ID: {driver['id']}, \nCustomer ID: {driver['customerId']}, \nDriver ID: {driver['driverId']}, \nPickup: {driver['pickupZone']}, \nDropoff: {driver['dropoffZone']}, \nCost: {driver['cost']}, \nRequest Time: {driver['requestTime']}, \nPickup Time: {driver['pickupTime']}, \nDropoff Time: {driver['dropoffTime']}\n"
 
             driverMessage = "Here is a list of your previous rides.\n" + rides + "\nWould you like to request another ride?"
-            serverSocket.sendto(driverMessage.encode(), clientAddress)
+            serverSocket.sendto(driverMessage.encode(), driverAddress)
         else:
             driverMessage = "Would you like to accept a ride?"
-            serverSocket.sendto(driverMessage.encode(), clientAddress)
+            serverSocket.sendto(driverMessage.encode(), driverAddress)
 
         #receives the driver's response and decodes it from JSON format
-        message, clientAddress = serverSocket.recvfrom(2048)
+        message, driverAddress = serverSocket.recvfrom(2048)
         request = json.loads(message.decode("utf-8"))
         text = str(request["text"])
+        print(f"Driver ID: {driverID} at address: {driverAddress} responded with: {text}")
 
+
+        #Based on the driver's response, it either prompts for the current zone and enters 
+        # a loop to continuously check for pending ride requests, assigning the first 
+        # available ride to the driver and updating the JSON data accordingly, or it sends 
+        # a "kill" message to terminate the interaction.
         if text.lower() == "yes":
-            customerMessage = ""
-            serverSocket.sendto(customerMessage.encode(), clientAddress)
+            driverMessage = "What is your current zone? (1, 2, ..., 9)"
+            serverSocket.sendto(driverMessage.encode(), driverAddress)
+            print(f"Driver ID: {driverID} at address: {driverAddress}. Asked for current zone.")
+
+
+            #receives the driver's response and decodes it from JSON format
+            message, driverAddress = serverSocket.recvfrom(2048)
+            request = json.loads(message.decode("utf-8"))
+            text = str(request["text"])
+            print(f"Driver ID: {driverID} at address: {driverAddress} responded with current zone: {text}")
+
+
+            for driver in data["Driver"]:
+                if driverID == driver["id"]:
+                    driver["currentZone"] = text
+                    driverCurrentZone = text
+                    writeJSON()
+                    break
+            
+            #enters a loop to continuously check for pending ride requests and assigns the first available ride to the driver, updating the JSON data accordingly.
+            print("Waiting for a ride request...")
+            rideFound = False
+            while not rideFound:
+                for ride in data["rideInfo"]:
+                    if ride["pending"] == 1:
+                        ride["pending"] = 2
+                        ride["driverId"] = driverID
+                        writeJSON()
+                        rideFound = True
+                        break
+
+            print("Ride request found. Sending ride details to driver...")
+            message, driverAddress = serverSocket.recvfrom(2048)
+            request = json.loads(message.decode("utf-8"))
+            text = str(request["text"])
+            print(f"Driver ID: {driverID} at address: {driverAddress} responded with: {text}")
+            
+            for ride in data["rideInfo"]:
+                if ride["driverId"] == driverID and ride["pending"] == 2:
+                    customerID = ride["customerId"]
+                    customerAddress = addressFinder(customerID)
+                    print(f"Driver {driverID} is heading to pickup zone {ride['pickupZone']} for customer {ride['customerId']}.")
+                    while ride["pickupZone"] != driverCurrentZone:
+                        if driverCurrentZone < ride["pickupZone"]:
+                            driverCurrentZone = int(driverCurrentZone) + 1
+                            time.sleep(2)
+                        elif driverCurrentZone > ride["pickupZone"]:
+                            driverCurrentZone = int(driverCurrentZone) - 1
+                            time.sleep(2)
+                        else:
+                            break
+                    print(f"Driver {driverID} has arrived at pickup zone {ride['pickupZone']} for customer {ride['customerId']}.")
+                    ride["pickupTime"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                    ride["pending"] = 3
+                    writeJSON()
+                    time.sleep(3)
+
+                    print(f"Driver {driverID} is heading to dropoff zone {ride['dropoffZone']} with customer {ride['customerId']}.")
+                    while ride["dropoffZone"] != driverCurrentZone:
+                        if driverCurrentZone < ride["dropoffZone"]:
+                            driverCurrentZone = int(driverCurrentZone) + 1
+                            time.sleep(2)
+                        elif driverCurrentZone > ride["dropoffZone"]:
+                            driverCurrentZone = int(driverCurrentZone) - 1
+                            time.sleep(2)
+                        else:
+                            break
+                    
+                    print(f"Driver {driverID} has arrived at dropoff zone {ride['dropoffZone']} with customer {ride['customerId']}.")
+                    ride["dropoffTime"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                    ride["pending"] = 4
+                    writeJSON()
+                    break
+
+            for driver in data["Driver"]:
+                if driver["id"] == driverID:
+                        driver["available"] = True
+                        break
+            for customer in data["Customer"]:
+                if customer["id"] == customerID:
+                    customer["riding"] = False
+                    break
+            writeJSON()
+
+            driverMessage = "kill"
+            serverSocket.sendto(driverMessage.encode(), driverAddress)
         else:
-            customerMessage = "kill"
-            serverSocket.sendto(customerMessage.encode(), clientAddress)
+            driverMessage = "kill"
+            serverSocket.sendto(driverMessage.encode(), driverAddress)
         
+
 
 
 
@@ -209,23 +340,30 @@ while True:
     # if the server address is recognized as a customer, it prompts the customer to upload a headshot and view their previous rides, updating the JSON data accordingly. 
     # If the customer chooses to request another ride, it prompts for the desired pickup zone. 
     elif serverChecked == "Customer":
+        print(f"Received message from Customer address: {clientAddress}")
         customerMessage = "Would you like to upload a customer headshot?: "
         customerAddress = tuple(clientAddress)
+        customerID = idFinder(tuple(customerAddress))
         serverSocket.sendto(customerMessage.encode(), customerAddress)
+        print(f"Customer ID: {customerID} at address: {customerAddress}. Asking about headshot upload.")
 
         #receives the customer's response and decodes it from JSON format
         message, customerAddress = serverSocket.recvfrom(2048)
         request = json.loads(message.decode("utf-8"))
         text = str(request["text"])
+        print(f"Customer ID: {customerID} at address: {customerAddress} responsed with: {text}")
+
 
         # if the customer chooses to upload a headshot, it prompts for the headshot and updates the JSON data with the provided information
         if text.lower() == "yes":
             customerMessage = "Please upload your headshot."
             serverSocket.sendto(customerMessage.encode(), customerAddress)
+            print(f"Customer ID: {customerID} at address: {customerAddress}. Sent request for headshot upload.")
 
             message, customerAddress = serverSocket.recvfrom(2048)
             request = json.loads(message.decode("utf-8"))
             text = str(request["text"])
+            print(f"Customer ID: {customerID} at address: {customerAddress}. Headshot: {text}")
 
             for customer in data["Customer"]:
                 if tuple(customer.get("serverAddress", [])) == tuple(customerAddress):
@@ -236,38 +374,52 @@ while True:
         #prompts the customer to view their previous rides and updates the JSON data accordingly
         customerMessage = "Would you like to see a list your previous rides?"
         serverSocket.sendto(customerMessage.encode(), customerAddress)
+        print(f"Customer ID: {customerID} at address: {customerAddress}. Asking about previous rides.")
 
         message, customerAddress = serverSocket.recvfrom(2048)
         request = json.loads(message.decode("utf-8"))
         text = str(request["text"])
         rides = ""
+        print(f"Customer ID: {customerID} at address: {customerAddress}. Responded with: {text}")
 
-        #if the customer chooses to view their previous rides, it retrieves the relevant information from the JSON data and sends it back to the customer. If the customer chooses not to view their previous rides, it prompts them to request another ride.
+
+        #if the customer chooses to view their previous rides, it retrieves the relevant information from the 
+        # JSON data and sends it back to the customer. If the customer chooses not to view their previous
+        #  rides, it prompts them to request another ride.
         if text.lower() == "yes":
-            id = idFinder(tuple(customerAddress))
             for customer in data["rideInfo"]:
-                if str(customer["customerId"]) == id:
-                    rides += f"Ride ID: {customer['id']}, Customer ID: {customer['customerId']}, Driver ID: {customer['driverId']}, Pickup: {customer['pickupZone']}, Dropoff: {customer['dropoffZone']}, Cost: {customer['cost']}, Request Time: {customer['requestTime']}, Pickup Time: {customer['pickupTime']}, Dropoff Time: {customer['dropoffTime']}\n"
+                if str(customer["customerId"]) == customerID:
+                    rides += f"\nRide ID: {customer['id']}, \nCustomer ID: {customer['customerId']}, \nDriver ID: {customer['driverId']}, \nPickup: {customer['pickupZone']}, \nDropoff: {customer['dropoffZone']}, \nCost: {customer['cost']}, \nRequest Time: {customer['requestTime']}, \nPickup Time: {customer['pickupTime']}, \nDropoff Time: {customer['dropoffTime']}\n"
 
             customerMessage = "Here is a list of your previous rides.\n" + rides + "\nWould you like to request another ride?"
             serverSocket.sendto(customerMessage.encode(), customerAddress)
+            print(f"Customer ID: {customerID} at address: {customerAddress}. Sent previous rides and asked about requesting another ride.")
         else:
             customerMessage = "Would you like to request another ride?"
             serverSocket.sendto(customerMessage.encode(), customerAddress)
+            print(f"Customer ID: {customerID} at address: {customerAddress}. Asked about requesting another ride.")
 
         #receives the customer's response and decodes it from JSON format
         message, customerAddress = serverSocket.recvfrom(2048)
         request = json.loads(message.decode("utf-8"))
         text = str(request["text"])
+        print(f"Customer ID: {customerID} at address: {customerAddress}. Responded with: {text}")
 
+
+        #Based on the customer's response, it either prompts for the desired pickup and dropoff zones and 
+        # updates the JSON data with the ride request information, or it sends a "kill" message to 
+        # terminate the interaction.
         if text.lower() == "yes":
             customerMessage = "What is your desired pickup and dropoff zone? Pickup zone: 1, Dropoff zone: 2"
             serverSocket.sendto(customerMessage.encode(), customerAddress)
+            print(f"Customer ID: {customerID} at address: {customerAddress}. Asked for pickup and dropoff zones.")
 
             message, customerAddress = serverSocket.recvfrom(2048)
             request = json.loads(message.decode("utf-8"))
             pickup_zone = str(request["pickupZone"])
             dropoff_zone = str(request["dropoffZone"])
+
+            print(f"Customer ID: {customerID} at address: {customerAddress}. Pickup zone: {pickup_zone}, Dropoff zone: {dropoff_zone}")
 
             for customer in data["Customer"]:
                 if tuple(customer.get("serverAddress", [])) == tuple(customerAddress):
@@ -275,8 +427,13 @@ while True:
                     writeJSON()
                     break
 
-            
-            data["rideInfo"][-1]["customerId"] = idFinder(tuple(customerAddress))
+            #Collects the customer's ID, pickup zone, dropoff zone, request time, and calculates the
+            # cost of the ride based on the distance between the pickup and dropoff zones.
+            # It then updates the JSON data with this information and sends a message to the customer 
+            # confirming that their ride request has been sent to available drivers. The server then
+            #  enters a loop to wait for a response from a driver, and if a driver accepts the ride request, 
+            # it updates the JSON data
+            data["rideInfo"][-1]["customerId"] = customerID
             data["rideInfo"][-1]["pickupZone"] = pickup_zone
             data["rideInfo"][-1]["dropoffZone"] = dropoff_zone
             data["rideInfo"][-1]["requestTime"] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -287,26 +444,40 @@ while True:
 
             customerMessage = "Your ride request has been sent to available drivers."
             serverSocket.sendto(customerMessage.encode(), customerAddress)
+            driverFound = False
+            print("Waiting for a driver to accept the ride request...")
 
-            while True:
-                message, clientAddress = serverSocket.recvfrom(2048)
-                request = json.loads(message.decode("utf-8"))
-
-                if serverCheck(data, clientAddress) == "Driver":
-                    driver_id = idFinder(tuple(clientAddress))
-                    if data["rideInfo"][-1]["pending"] == 1:
-                        data["rideInfo"][-1]["driverId"] = driver_id
-                        data["rideInfo"][-1]["pending"] = 2
-                        writeJSON()
-                        for driver in data["Driver"]:
-                            if driver["id"] == driver_id:
-                                customerMessage = f"Driver {driver_id} has accepted your ride request. headshot: {driver['headshot']}, car model: {driver['model']}, car color: {driver['color']}, plate number: {driver['car']['plateNumber']}"
-                                break
-
-                        serverSocket.sendto(customerMessage.encode(), customerAddress)
-                        driverMessage = f"Ride request accepted. Customer ID: {data['rideInfo'][-1]['customerId']}, Pickup Zone: {pickup_zone}, Dropoff Zone: {dropoff_zone}, Cost: {data['rideInfo'][-1]['cost']}"
-                        serverSocket.sendto(driverMessage.encode(), clientAddress)
+            while not driverFound:
+                for ride in data["rideInfo"]:
+                    time.sleep(1)
+                    if ride["pending"] == 2:
+                        driverFound = True
+                        ride_id = ride["id"]
+                        driver_id = ride["driverId"]
                         break
+
+                
+            for driver in data["Driver"]:
+                if driver["id"] == driver_id:
+                    customerMessage = f"\nRide {ride_id} inicitated\nDriver {driver_id} has accepted your ride request. \nheadshot: {driver['headshot']}, \nCar model: {driver['model']}, \nCar color: {driver['color']}, \nPlate number: {driver['car']['plateNumber']}"
+                    driver["available"] = False
+                    break
+            for customer in data["Customer"]:
+                if customer["id"] == customerID:
+                    customer["riding"] = True
+                    break
+            writeJSON()
+
+            serverSocket.sendto(customerMessage.encode(), customerAddress)
+            driverMessage = f"Ride request accepted. \nCustomer ID: {data['rideInfo'][-1]['customerId']}, \nPickup Zone: {pickup_zone}, \nDropoff Zone: {dropoff_zone}, \nCost: {data['rideInfo'][-1]['cost']}"
+            for driver in data["Driver"]:
+                if driver["id"] == driver_id:
+                    driverAddress = tuple(driver.get("serverAddress", []))
+                    break
+            
+            print(f"Sent ride request details.")
+            serverSocket.sendto(driverMessage.encode(), driverAddress)
+
             customerMessage = "kill"
             serverSocket.sendto(customerMessage.encode(), customerAddress)               
 
