@@ -61,7 +61,7 @@ def passwordCheck(user_id, password, tag):
     for group in ("Customer", "Driver"):
         for person in data.get(group, []):
             if str(person.get("id")) == user_id:
-                if person.get("password") == password and str(person.get("tag")) == tag:
+                if person.get("password") == password and tag == group.lower():
                     return group.lower()
                 return "invalid" # ID exist, but wrong password
     return "invalid"
