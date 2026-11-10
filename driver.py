@@ -80,8 +80,10 @@ while True:
     if response == "kill":
         break
     if response == "What is your current zone? (1, 2, ..., 9)":
-        print(response)
-        current_zone = input('Input current zone (1, 2, ..., 9): ')
+        current_zone = 0
+        while (current_zone < 1 | current_zone > 9):
+            print(response)
+            current_zone = input('Input current zone (1, 2, ..., 9): ')
         payload = json.dumps({
             "currentZone": current_zone
         })

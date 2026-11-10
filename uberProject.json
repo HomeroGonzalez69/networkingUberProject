@@ -8,18 +8,18 @@
       "riding": false,
       "serverAddress": [
         "127.0.0.1",
-        59267
+        60537
       ]
     },
     {
       "id": "B",
       "password": "B",
       "headshot": "B.jpg",
-      "currentZone": "3",
+      "currentZone": "9",
       "riding": false,
       "serverAddress": [
         "127.0.0.1",
-        50189
+        57725
       ]
     },
     {
@@ -46,21 +46,21 @@
       "plateNumber": 111,
       "serverAddress": [
         "127.0.0.1",
-        59406
+        58718
       ]
     },
     {
       "id": "E",
       "password": "E",
-      "headshot": null,
-      "currentZone": "3",
+      "headshot": "E.jpg",
+      "currentZone": "2",
       "available": true,
       "model": "Mazda",
       "color": "Red",
       "plateNumber": 222,
       "serverAddress": [
         "127.0.0.1",
-        58234
+        57207
       ]
     },
     {
@@ -81,7 +81,68 @@
   "server": [
     {}
   ],
-  "rideInfo": [],
+  "rideInfo": [
+    {
+      "pending": 4,
+      "id": 1,
+      "driverId": "E",
+      "customerId": "A",
+      "pickupZone": "1",
+      "dropoffZone": "5",
+      "requestTime": "2026-11-10 10:27:00",
+      "pickupTime": "2026-11-10 10:27:35",
+      "dropoffTime": "2026-11-10 10:27:40",
+      "cost": 7.0
+    },
+    {
+      "pending": 4,
+      "id": 2,
+      "driverId": "E",
+      "customerId": "A",
+      "pickupZone": "1",
+      "dropoffZone": "9",
+      "requestTime": "2026-11-10 10:29:19",
+      "pickupTime": "2026-11-10 10:30:21",
+      "dropoffTime": "2026-11-10 10:30:24",
+      "cost": 14.0
+    },
+    {
+      "pending": 2,
+      "id": 3,
+      "driverId": "E",
+      "customerId": "A",
+      "pickupZone": "1",
+      "dropoffZone": "9",
+      "requestTime": "2026-11-10 10:32:58",
+      "pickupTime": null,
+      "dropoffTime": null,
+      "cost": 14.0
+    },
+    {
+      "pending": 4,
+      "id": 4,
+      "driverId": "D",
+      "customerId": "A",
+      "pickupZone": "7",
+      "dropoffZone": "5",
+      "requestTime": "2026-11-10 10:37:44",
+      "pickupTime": "2026-11-10 10:38:09",
+      "dropoffTime": "2026-11-10 10:38:13",
+      "cost": 7.0
+    },
+    {
+      "pending": 1,
+      "id": 5,
+      "driverId": null,
+      "customerId": "B",
+      "pickupZone": "9",
+      "dropoffZone": "3",
+      "requestTime": "2026-11-10 10:37:48",
+      "pickupTime": null,
+      "dropoffTime": null,
+      "cost": 10.0
+    }
+  ],
   "zones": [
     {
       "zoneId": "1",
