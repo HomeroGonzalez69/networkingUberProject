@@ -2,30 +2,30 @@
   "Customer": [
     {
       "id": "A",
-      "password": "passwordA",
-      "headshot": "hdfdhakjfghdasgfkdsfhgasdg",
-      "currentZone": "2",
+      "password": "A",
+      "headshot": "A.jpg",
+      "currentZone": "5",
       "riding": false,
       "serverAddress": [
         "127.0.0.1",
-        59608
+        59267
       ]
     },
     {
       "id": "B",
-      "password": "passwordB",
-      "headshot": "dnbfksjdf",
-      "currentZone": "2",
+      "password": "B",
+      "headshot": "B.jpg",
+      "currentZone": "3",
       "riding": false,
       "serverAddress": [
         "127.0.0.1",
-        57872
+        50189
       ]
     },
     {
       "id": "C",
-      "password": "passwordC",
-      "headshot": "meomemeowemowm",
+      "password": "C",
+      "headshot": null,
       "currentZone": "5",
       "riding": false,
       "serverAddress": [
@@ -37,36 +37,36 @@
   "Driver": [
     {
       "id": "D",
-      "password": "passwordD",
-      "headshot": "sdfgds",
-      "currentZone": "2",
+      "password": "D",
+      "headshot": "D.jpg",
+      "currentZone": "5",
       "available": true,
       "model": "Ford",
       "color": "Black",
       "plateNumber": 111,
       "serverAddress": [
         "127.0.0.1",
-        53193
+        59406
       ]
     },
     {
       "id": "E",
-      "password": "passwordE",
-      "headshot": "bgdfghdfghdf",
-      "currentZone": "6",
+      "password": "E",
+      "headshot": null,
+      "currentZone": "3",
       "available": true,
       "model": "Mazda",
       "color": "Red",
       "plateNumber": 222,
       "serverAddress": [
         "127.0.0.1",
-        60538
+        58234
       ]
     },
     {
       "id": "F",
-      "password": "passwordF",
-      "headshot": "meow",
+      "password": "F",
+      "headshot": null,
       "currentZone": "1",
       "available": true,
       "model": "Tesla",
@@ -81,80 +81,7 @@
   "server": [
     {}
   ],
-  "rideInfo": [
-    {
-      "pending": 4,
-      "id": 2,
-      "driverId": "E",
-      "customerId": "B",
-      "pickupZone": "1",
-      "dropoffZone": "5",
-      "requestTime": "2026-11-01 00:05:17",
-      "pickupTime": "2026-11-01 00:01:04",
-      "dropoffTime": "2026-11-01 00:01:15",
-      "cost": 7.0710678118654755
-    },
-    {
-      "pending": 4,
-      "id": 3,
-      "driverId": "F",
-      "customerId": "C",
-      "pickupZone": "5",
-      "dropoffZone": "1",
-      "requestTime": "2026-11-01 00:05:17",
-      "pickupTime": "2026-11-01 00:01:04",
-      "dropoffTime": "2026-11-01 00:01:15",
-      "cost": 10.0
-    },
-    {
-      "pending": 4,
-      "id": 4,
-      "driverId": "D",
-      "customerId": "A",
-      "pickupZone": "5",
-      "dropoffZone": "1",
-      "requestTime": "2026-11-01 00:05:17",
-      "pickupTime": "2026-11-01 00:01:04",
-      "dropoffTime": "2026-11-01 00:01:15",
-      "cost": 5.0
-    },
-    {
-      "customerId": "A",
-      "pickupZone": "2",
-      "dropoffZone": "6",
-      "requestTime": "2026-11-01 00:16:29",
-      "pending": 4,
-      "id": 2824,
-      "cost": 7.0710678118654755,
-      "driverId": "E",
-      "pickupTime": "2026-11-01 00:17:17",
-      "dropoffTime": "2026-11-01 00:17:28"
-    },
-    {
-      "pending": 4,
-      "id": 2824,
-      "driverId": "E",
-      "customerId": "A",
-      "pickupZone": "4",
-      "dropoffZone": "7",
-      "requestTime": "2026-11-03 10:41:44",
-      "pickupTime": "2026-11-03 10:41:55",
-      "dropoffTime": "2026-11-03 10:42:04",
-      "cost": 5.0
-    },
-    {
-      "pending": 4,
-      "id": 2824,
-      "driverId": "E",
-      "customerId": "A",
-      "pickupZone": "2",
-      "dropoffZone": "8",
-      "requestTime": "2026-11-03 18:03:35",
-      "pickupTime": "2026-11-03 18:04:44",
-      "dropoffTime": "2026-11-03 18:04:59",
-      "cost": 10.0
-    }
-  ],
+  "rideInfo": [],
   "zones": [
     {
       "zoneId": "1",

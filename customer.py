@@ -1,6 +1,24 @@
 #customer.py
 from socket import *
 import json
+import base64
+import os
+
+# send the headshot FILE (not just its name) so the server can save it as A.jpg, D.jpg, ...
+#reads the image file and packs it into the message (base64). The file has to be small enough for ONE message.
+def headshotPayload(path):
+    path = path.strip().strip('"')
+    try:
+        with open(path, "rb") as imageFile:
+            raw = imageFile.read()
+    except OSError:
+        print("File not found, skipping the headshot upload.")
+        return json.dumps({"headshot": "", "data": ""})
+    if len(raw) > 6000:
+        print("File is too big for one message (max 6000 bytes), skipping the headshot upload.")
+        return json.dumps({"headshot": "", "data": ""})
+    return json.dumps({"headshot": os.path.basename(path), "data": base64.b64encode(raw).decode("ascii")})
+
 
 #sets up the UDP client socket and connects to the server
 serverName = 'localhost'
@@ -36,6 +54,13 @@ while not login:
         login = True
     else:
         print("Login Failed")
+        print("1) Try again")
+        print("2) Quit")
+        choice = input('Choose 1 or 2: ').strip()
+        while choice not in ("1", "2"):
+            choice = input('Please choose 1 or 2: ').strip()
+        if choice == "2":
+            raise SystemExit
 
 print ("Login Successful")
 
@@ -68,9 +93,7 @@ while True:
     elif response.__contains__("Please upload your headshot"):
         print(response)
         headshot = input('Input headshot file path: ')
-        payload = json.dumps({
-            "headshot": headshot
-        })
+        payload = headshotPayload(headshot)
         clientSocket.sendto(payload.encode("utf-8"), serverAddress)
         continue
     elif response == "Your ride request has been sent to available drivers.":

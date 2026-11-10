@@ -1,6 +1,22 @@
 #driver.py
 from socket import *
 import json
+import base64
+import os
+
+#reads the image file and packs it into the message (base64). The file has to be small enough for ONE message.
+def headshotPayload(path):
+    path = path.strip().strip('"')
+    try:
+        with open(path, "rb") as imageFile:
+            raw = imageFile.read()
+    except OSError:
+        print("File not found, skipping the headshot upload.")
+        return json.dumps({"headshot": "", "data": ""})
+    if len(raw) > 6000:
+        print("File is too big for one message (max 6000 bytes), skipping the headshot upload.")
+        return json.dumps({"headshot": "", "data": ""})
+    return json.dumps({"headshot": os.path.basename(path), "data": base64.b64encode(raw).decode("ascii")})
 
 #sets up the UDP client socket and connects to the server
 serverName = 'localhost'
@@ -37,6 +53,13 @@ while not login:
         login = True
     else:
         print("Login Failed")
+        print("1) Try again")
+        print("2) Quit")
+        choice = input('Choose 1 or 2: ').strip()
+        while choice not in ("1", "2"):
+            choice = input('Please choose 1 or 2: ').strip()
+        if choice == "2":
+            raise SystemExit
 
 print ("Login Successful")
 
@@ -67,10 +90,25 @@ while True:
     if response == "Please upload your driver headshot.":
         print(response)
         headshot = input('Input headshot file path: ')
+        payload = headshotPayload(headshot)
+        clientSocket.sendto(payload.encode("utf-8"), serverAddress)
+        continue
+    #  answer the "pick a ride" prompt with a ride ID (R = refresh, Q = quit)
+    if response.__contains__("Enter the ride ID to accept"):
+        print(response)
+        ride_id = input('Ride ID to accept (R to refresh, Q to quit): ')
         payload = json.dumps({
-            "headshot": headshot
+            "rideId": ride_id
         })
         clientSocket.sendto(payload.encode("utf-8"), serverAddress)
+        continue
+    if response.__contains__("Sorry, ride"):
+        print(response)
+        continue
+
+    # final message after dropoff, just print it
+    if response.__contains__("is done"):
+        print(response)
         continue
 
     #prints the received message and prompts the user for input
@@ -80,4 +118,3 @@ while True:
         "text": text
     })
     clientSocket.sendto(payload.encode("utf-8"), serverAddress)
-
