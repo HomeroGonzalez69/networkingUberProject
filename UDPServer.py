@@ -498,7 +498,7 @@ def handleClient(clientAddress):
                 # updates the JSON data with the ride request information, or it sends a "kill" message to
                 # terminate the interaction.
                 if text.lower() == "yes":
-                    customerMessage = "What is your desired pickup and dropoff zone? Pickup zone: 1, Dropoff zone: 2"
+                    customerMessage = "What is your desired pickup and dropoff zone? EX: Pickup zone: 1, Dropoff zone: 2"
                     sendTo(customerAddress, customerMessage)
                     print(
                         f"Customer ID: {customerID} at address: {customerAddress}. Asked for pickup and dropoff zones.")
