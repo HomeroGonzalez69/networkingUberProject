@@ -80,11 +80,10 @@ while True:
     response = response.decode("utf-8")
     if response == "kill":
         break
-    elif response == "What is your desired pickup and dropoff zone? Pickup zone: 1, Dropoff zone: 2":
-        
+    elif response == "What is your desired pickup and dropoff zone? EX: Pickup zone: 1, Dropoff zone: 2":
         pickup_zone = 0
         dropoff_zone = 0
-        while ((pickup_zone < 1 or pickup_zone > 9) and (dropoff_zone < 1 or pickup_zone > 0)):
+        while (True):
             print(response)
             try:
                 pickup_zone = int(input('Input pickup zone (1, 2, ..., 9): '))
@@ -94,6 +93,10 @@ while True:
                 pickup_zone = 0
                 dropoff_zone = 0
                 continue
+            if (pickup_zone >= 1 and pickup_zone <= 9):
+                if  (dropoff_zone >= 1 and dropoff_zone <= 9):
+                    break
+        
         payload = json.dumps({
             "pickupZone": pickup_zone,
             "dropoffZone": dropoff_zone
