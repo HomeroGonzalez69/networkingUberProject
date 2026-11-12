@@ -82,30 +82,6 @@
     {}
   ],
   "rideInfo": [
-    {
-      "pending": 4,
-      "id": 1,
-      "driverId": "E",
-      "customerId": "A",
-      "pickupZone": "1",
-      "dropoffZone": "9",
-      "requestTime": "2026-11-12 09:41:51",
-      "pickupTime": "2026-11-12 09:42:12",
-      "dropoffTime": "2026-11-12 09:42:13",
-      "cost": 14.0
-    },
-    {
-      "pending": 4,
-      "id": 2,
-      "driverId": "E",
-      "customerId": "A",
-      "pickupZone": "4",
-      "dropoffZone": "7",
-      "requestTime": "2026-11-12 09:50:31",
-      "pickupTime": "2026-11-12 09:50:46",
-      "dropoffTime": "2026-11-12 09:50:47",
-      "cost": 5.0
-    }
   ],
   "zones": [
     {
