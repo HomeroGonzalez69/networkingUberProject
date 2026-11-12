@@ -81,9 +81,15 @@ while True:
         break
     if response == "What is your current zone? (1, 2, ..., 9)":
         current_zone = 0
-        while (current_zone < 1 | current_zone > 9):
+        while (current_zone < 1 or current_zone > 9):
             print(response)
-            current_zone = input('Input current zone (1, 2, ..., 9): ')
+            try:
+                current_zone = int(input('Input current zone (1, 2, ..., 9): '))
+            except ValueError:
+                print("Please Enter a whole number")
+                current_zone = 0
+                continue
+
         payload = json.dumps({
             "currentZone": current_zone
         })
